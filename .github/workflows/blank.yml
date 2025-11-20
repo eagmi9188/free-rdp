@@ -1,0 +1,41 @@
+name: Free-RDP-Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Enable RDP & Set Password
+        shell: powershell
+        run: |
+          echo "▪ 修改注册表以开启 RDP"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
+
+          echo "▪ 开放 RDP 防火墙"
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+          echo "▪ 设置密码（默认：123456Aa!）"
+          $password = ConvertTo-SecureString "123456Aa!" -AsPlainText -Force
+          Set-LocalUser -Name "runneradmin" -Password $password
+
+      - name: Show RDP Connection Info
+        shell: powershell
+        run: |
+          echo "===================================="
+          echo "        🚀 FREE WINDOWS RDP          "
+          echo "===================================="
+          echo "IP Address:"
+          (Get-NetIPAddress -AddressFamily IPv4).IPAddress
+          echo ""
+          echo "Username: runneradmin"
+          echo "Password: 123456Aa!"
+          echo "Valid for: 6 hours"
+          echo "===================================="
+
+      - name: Keep VM Alive for 6 Hours
+        shell: powershell
+        run: |
+          Start-Sleep -Seconds 21600
